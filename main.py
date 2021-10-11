@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from dataclasses import dataclass
-from random import choice
+from secrets import choice
 
 import argparse
 import sys
