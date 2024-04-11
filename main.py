@@ -2,7 +2,6 @@
 
 from dataclasses import dataclass
 from secrets import choice
-from typing import Iterable, Any
 from functools import cached_property
 
 import argparse
@@ -11,7 +10,7 @@ import string
 
 
 def main():
-    options = get_options()
+    options = read_arguments()
     password = options.generate()
 
     sys.stdout.write(password)
@@ -20,8 +19,8 @@ def main():
 
 
 @dataclass
-class Options:
-    """Command line options"""
+class Generator:
+    """Password generator"""
 
     length: int
     newline: bool
@@ -30,21 +29,53 @@ class Options:
     numbers: bool
     symbols: bool
 
+    def generate(self) -> str:
+        while True:
+            candidate = self._generate_unchecked()
+            if not self._should_check_passwords:
+                return candidate
+
+            if self._password_is_ok(candidate):
+                return candidate
+
+    def _password_is_ok(self, candidate: str) -> bool:
+        if candidate[0] not in self.start_end_characters:
+            return False
+
+        if candidate[-1] not in self.start_end_characters:
+            return False
+
+        letters_used = set(candidate)
+
+        # Make sure we have some overlap with the password and each of the
+        # character sets
+        for character_set in self.all_character_sets:
+            character_set_characters = set(character_set)
+            if not character_set_characters & letters_used:
+                return False
+
+        return True
+
+    @property
+    def _should_check_passwords(self) -> bool:
+        # We are going to skip all checks if we are working with super short passwords
+        return self.length >= len(self.all_character_sets)
+
     @cached_property
-    def all_character_sets(self) -> list[str]:
-        out: list[str] = []
+    def all_character_sets(self) -> set[str]:
+        out: set[str] = set()
 
         if self.lowercase:
-            out.append(string.ascii_lowercase)
+            out.add(string.ascii_lowercase)
 
         if self.uppercase:
-            out.append(string.ascii_uppercase)
+            out.add(string.ascii_uppercase)
 
         if self.numbers:
-            out.append(string.digits)
+            out.add(string.digits)
 
         if self.symbols:
-            out.append(string.punctuation)
+            out.add(string.punctuation)
 
         return out
 
@@ -81,40 +112,8 @@ class Options:
 
         return "".join(working)
 
-    @property
-    def _should_check_passwords(self) -> bool:
-        # We are going to skip all checks if we are working with super short passwords
-        return self.length >= len(self.all_character_sets)
 
-    def _password_is_ok(self, candidate: str) -> bool:
-        if candidate[0] not in self.start_end_characters:
-            return False
-
-        if candidate[-1] not in self.start_end_characters:
-            return False
-
-        letters_used = set(candidate)
-
-        # Make sure we have some overlap with the password and each of the
-        # character sets
-        for character_set in self.all_character_sets:
-            character_set_characters = set(character_set)
-            if not character_set_characters & letters_used:
-                return False
-
-        return True
-
-    def generate(self) -> str:
-        while True:
-            candidate = self._generate_unchecked()
-            if not self._should_check_passwords:
-                return candidate
-
-            if self._password_is_ok(candidate):
-                return candidate
-
-
-def get_options(*args) -> Options:
+def read_arguments() -> Generator:
     """Get the options for execution"""
 
     parser = argparse.ArgumentParser()
@@ -183,7 +182,7 @@ def get_options(*args) -> Options:
         dest="newline",
     )
 
-    args = parser.parse_args(*args)
+    args = parser.parse_args()
 
     length: int = args.length  # type: ignore
     newline: bool | None = args.newline  # type: ignore
@@ -198,7 +197,7 @@ def get_options(*args) -> Options:
         else:
             newline = False
 
-    return Options(
+    return Generator(
         length=length,
         newline=newline,
         lowercase=lowercase,
