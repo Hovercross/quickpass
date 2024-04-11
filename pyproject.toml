@@ -1,19 +1,24 @@
-[tool.poetry]
+[project]
 name = "quickpass"
 version = "0.1.0"
 description = "Quickly generate passwords on the command line"
-authors = ["Adam Peacock <adam@thepeacock.net>"]
-license = "MIT"
+authors = [{ name = "Adam Peacock", email = "adam@thepeacock.net" }]
+dependencies = []
+requires-python = "<4.0,>=3.9"
+readme = "README.md"
+license = { text = "MIT" }
 
-[tool.poetry.dependencies]
-python = "^3.9"
 
-[tool.poetry.dev-dependencies]
-pylint = "^2.10.2"
-autopep8 = "^1.5.7"
-rope = "^0.19.0"
-mypy = "^0.942"
+[tool.pdm]
+distribution = false
 
-[build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
+[tool.pdm.dev-dependencies]
+dev = [
+    "pylint<3.0.0,>=2.10.2",
+    "autopep8<2.0.0,>=1.5.7",
+    "rope<1.0.0,>=0.19.0",
+    "mypy<1.0,>=0.942",
+]
+
+[tool.pdm.build]
+includes = []
