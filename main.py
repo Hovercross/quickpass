@@ -166,6 +166,16 @@ def read_arguments() -> Generator:
         help="Include symbols in password",
     )
 
+    parser.add_argument(
+        "-u",
+        "--uuid",
+        action="store_const",
+        const=True,
+        dest="uuid",
+        default=False,
+        help="Generate a UUID",
+    )
+
     newline_group = parser.add_mutually_exclusive_group()
 
     newline_group.add_argument(
