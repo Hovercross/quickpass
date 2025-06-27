@@ -5,3 +5,10 @@ merge_protections:
       - base = main
     success_conditions:
       - "#commits-behind <= 10"
+  - name: Fully up to date PRs with migrations
+    description: Make sure PRs are almost up to date before merging
+    if:
+      - files ~= .*migration.*
+      - base = main
+    success_conditions:
+      - "#commits-behind = 0"
